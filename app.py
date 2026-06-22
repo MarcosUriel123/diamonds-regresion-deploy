@@ -23,19 +23,19 @@ FORM_HTML = '''
 <h2>Predicción de Precio de Diamantes</h2>
 <form method="POST" action="/predict_form">
   <label>Carat (peso del diamante)</label>
-  <input type="number" step="0.01" name="carat" placeholder="ej. 0.5" required>
+  <input type="number" step="0.01" name="carat" placeholder="ej. 0.5" value="{{ valores.carat or '' }}" required>
   <small>rango típico: 0.2 - 3.0 carat</small>
 
   <label>Largo - X (mm)</label>
-  <input type="number" step="0.01" name="x" placeholder="ej. 5.1" required>
+  <input type="number" step="0.01" name="x" placeholder="ej. 5.1" value="{{ valores.x or '' }}" required>
   <small>rango típico: 4 - 9 mm</small>
 
   <label>Ancho - Y (mm)</label>
-  <input type="number" step="0.01" name="y" placeholder="ej. 5.2" required>
+  <input type="number" step="0.01" name="y" placeholder="ej. 5.2" value="{{ valores.y or '' }}" required>
   <small>rango típico: 4 - 9 mm</small>
 
   <label>Profundidad - Z (mm)</label>
-  <input type="number" step="0.01" name="z" placeholder="ej. 3.2" required>
+  <input type="number" step="0.01" name="z" placeholder="ej. 3.2" value="{{ valores.z or '' }}" required>
   <small>rango típico: 2.5 - 5.5 mm</small>
 
   <label>Cut</label>
@@ -44,7 +44,7 @@ FORM_HTML = '''
     <li>Very Good, Good = corte intermedio</li>
     <li>Fair = peor corte</li>
   </ul>
-  <select name="cut">{% for c in cuts %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+  <select name="cut">{% for c in cuts %}<option value="{{c}}" {% if c==valores.cut %}selected{% endif %}>{{c}}</option>{% endfor %}</select>
 
   <label>Color</label>
   <ul>
@@ -52,7 +52,7 @@ FORM_HTML = '''
     <li>G, H, I = casi incoloro</li>
     <li>J = con tinte amarillo (peor)</li>
   </ul>
-  <select name="color">{% for c in colors %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+  <select name="color">{% for c in colors %}<option value="{{c}}" {% if c==valores.color %}selected{% endif %}>{{c}}</option>{% endfor %}</select>
 
   <label>Clarity</label>
   <ul>
@@ -61,7 +61,7 @@ FORM_HTML = '''
     <li>SI1, SI2 = imperfecciones ligeras</li>
     <li>I1 = imperfecciones visibles (peor)</li>
   </ul>
-  <select name="clarity">{% for c in claritys %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+  <select name="clarity">{% for c in claritys %}<option value="{{c}}" {% if c==valores.clarity %}selected{% endif %}>{{c}}</option>{% endfor %}</select>
 
   <input type="submit" value="Predecir">
 </form>
@@ -70,23 +70,34 @@ FORM_HTML = '''
 
 @app.route('/')
 def home():
-    return render_template_string(FORM_HTML, cuts=cut_map.keys(), colors=color_map.keys(), claritys=clarity_map.keys(), resultado=None)
+    valores = {'carat': None, 'x': None, 'y': None, 'z': None, 'cut': None, 'color': None, 'clarity': None}
+    return render_template_string(FORM_HTML, cuts=cut_map.keys(), colors=color_map.keys(), claritys=clarity_map.keys(), resultado=None, valores=valores)
 
 @app.route('/predict_form', methods=['POST'])
 def predict_form():
-    carat = float(request.form['carat'])
-    x = float(request.form['x'])
-    y = float(request.form['y'])
-    z = float(request.form['z'])
-    cut = cut_map[request.form['cut']]
-    color = color_map[request.form['color']]
-    clarity = clarity_map[request.form['clarity']]
+    valores = {
+        'carat': request.form['carat'],
+        'x': request.form['x'],
+        'y': request.form['y'],
+        'z': request.form['z'],
+        'cut': request.form['cut'],
+        'color': request.form['color'],
+        'clarity': request.form['clarity']
+    }
+
+    carat = float(valores['carat'])
+    x = float(valores['x'])
+    y = float(valores['y'])
+    z = float(valores['z'])
+    cut = cut_map[valores['cut']]
+    color = color_map[valores['color']]
+    clarity = clarity_map[valores['clarity']]
 
     features = np.array([[carat, x, y, z, clarity, cut, color]])
     features_scaled = scaler.transform(features)
     prediccion = modelo.predict(features_scaled)
 
-    return render_template_string(FORM_HTML, cuts=cut_map.keys(), colors=color_map.keys(), claritys=clarity_map.keys(), resultado=round(float(prediccion[0]), 2))
+    return render_template_string(FORM_HTML, cuts=cut_map.keys(), colors=color_map.keys(), claritys=clarity_map.keys(), resultado=round(float(prediccion[0]), 2), valores=valores)
 
 @app.route('/predict', methods=['POST'])
 def predict():
