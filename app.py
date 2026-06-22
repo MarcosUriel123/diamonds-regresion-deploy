@@ -18,20 +18,25 @@ FORM_HTML = '''
   ul { margin: 3px 0 8px 20px; padding: 0; font-size: 0.85em; }
   select, input { display: block; margin-bottom: 10px; padding: 4px; }
   h2 { margin-bottom: 5px; }
+  small { color: #666; display: block; margin-top: -8px; margin-bottom: 10px; }
 </style>
 <h2>Predicción de Precio de Diamantes</h2>
 <form method="POST" action="/predict_form">
   <label>Carat (peso del diamante)</label>
-  <input type="number" step="0.01" name="carat" required>
+  <input type="number" step="0.01" name="carat" placeholder="ej. 0.5" required>
+  <small>rango típico: 0.2 - 3.0 carat</small>
 
   <label>Largo - X (mm)</label>
-  <input type="number" step="0.01" name="x" required>
+  <input type="number" step="0.01" name="x" placeholder="ej. 5.1" required>
+  <small>rango típico: 4 - 9 mm</small>
 
   <label>Ancho - Y (mm)</label>
-  <input type="number" step="0.01" name="y" required>
+  <input type="number" step="0.01" name="y" placeholder="ej. 5.2" required>
+  <small>rango típico: 4 - 9 mm</small>
 
   <label>Profundidad - Z (mm)</label>
-  <input type="number" step="0.01" name="z" required>
+  <input type="number" step="0.01" name="z" placeholder="ej. 3.2" required>
+  <small>rango típico: 2.5 - 5.5 mm</small>
 
   <label>Cut</label>
   <ul>
